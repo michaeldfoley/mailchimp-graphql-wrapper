@@ -1,0 +1,31 @@
+{
+  "name": "mailchimp-graphql-wrapper",
+  "version": "1.0.0",
+  "description": "A GraphQL wrapper for the Mailchimp 3.0 REST API",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon --exec babel-node --presets=@babel/env -- index.js"
+  },
+  "author": "Michael Foley <m@michaeldfoley.com> (http://michaeldfoley.com)",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.5",
+    "@babel/node": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "dataloader": "^1.4.0",
+    "dotenv": "^8.0.0",
+    "express": "^4.17.1",
+    "express-graphql": "^0.8.0",
+    "graphql": "^14.3.1",
+    "graphql-relay": "^0.6.0",
+    "mailchimp-api-v3": "^1.13.0",
+    "md5": "^2.2.1",
+    "nodemon": "^1.19.1"
+  },
+  "browserslist": [
+    "last 1 version",
+    "> 1%",
+    "IE 10"
+  ]
+}
