@@ -1,26 +1,16 @@
 import DataLoader from "dataloader";
-
 import express from "express";
 import graphqlHTTP from "express-graphql";
-import Mailchimp from "mailchimp-api-v3";
-import dotenv from "dotenv";
+import mailchimp from "./src/mailchimp";
 import md5 from "md5";
 import schema from "./schema";
 
-dotenv.config();
-const mailchimp = new Mailchimp(process.env.API_KEY);
-
-async function getByURL(relativeURL, { property, ...query } = {}) {
-  let res = await mailchimp.get(relativeURL, query);
-  return property ? res[property] : res;
-}
-
-function getListByURL(relativeURL, args = {}) {
-  return getByURL(`/lists/${process.env.LIST_ID}/${relativeURL}`, args);
+function getListByURL(path, args = {}) {
+  return mailchimp.get(`/lists/${process.env.LIST_ID}/${path}`, args);
 }
 
 function getPeople() {
-  return getListByURL("members/", { property: "members" });
+  return getListByURL("members/", { key: "members" });
 }
 
 function getPerson({ id, email }) {
@@ -46,7 +36,7 @@ const getInterestCategories = new DataLoader(keys =>
   Promise.all(
     keys.map(() =>
       getListByURL("interest-categories/", {
-        property: "categories",
+        key: "categories",
         count: 60
       })
     )
@@ -55,7 +45,7 @@ const getInterestCategories = new DataLoader(keys =>
 
 function getInterestsByCategory(category) {
   return getListByURL(`interest-categories/${category.id}/interests/`, {
-    property: "interests",
+    key: "interests",
     count: 60
   });
 }
@@ -82,10 +72,6 @@ app.use(
         cacheMap
       }
     );
-    const personByURLLoader = new DataLoader(
-      keys => Promise.all(keys.map(getByURL)),
-      { cacheMap }
-    );
     const interestLoader = new DataLoader(
       keys => Promise.all(keys.map(getInterest)),
       {
@@ -97,10 +83,6 @@ app.use(
       }
     );
     personLoader.loadAll = peopleLoader.load.bind(peopleLoader, "__all__");
-    personLoader.loadByURL = personByURLLoader.load.bind(personByURLLoader);
-    personLoader.loadManyByURL = personByURLLoader.loadMany.bind(
-      personByURLLoader
-    );
     interestLoader.loadMany = interestLoader.loadMany.bind(interestLoader);
     const loaders = { person: personLoader, interest: interestLoader };
     return {

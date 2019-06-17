@@ -21,7 +21,8 @@
     "graphql-relay": "^0.6.0",
     "mailchimp-api-v3": "^1.13.0",
     "md5": "^2.2.1",
-    "nodemon": "^1.19.1"
+    "nodemon": "^1.19.1",
+    "p-queue": "^6.0.2"
   },
   "browserslist": [
     "last 1 version",
