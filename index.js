@@ -1,8 +1,8 @@
 import express from "express";
 import graphqlHTTP from "express-graphql";
-import personLoader from "./src/person";
-import interestLoader from "./src/interest";
-import schema from "./schema";
+import personLoader from "./data/person";
+import interestLoader from "./data/interest";
+import schema from "./data/schema";
 
 const app = express();
 

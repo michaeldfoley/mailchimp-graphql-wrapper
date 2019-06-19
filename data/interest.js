@@ -6,7 +6,7 @@ const cacheMap = new Map();
 const interestLoader = new DataLoader(
   keys => Promise.all(keys.map(getInterest)),
   {
-    cacheKeyFn: id =>
+    cacheKeyFn: ({ id }) =>
       `/lists/${process.env.LIST_ID}/interest-categories/.../interests/${id}/`,
     cacheMap
   }
@@ -42,7 +42,10 @@ function getInterestsByCategory(category) {
   });
 }
 
-async function getInterest(id) {
+async function getInterest({ id, category_id } = {}) {
+  if (category_id && id) {
+    return getList(`interest-categories/${category_id}/interests/${id}`);
+  }
   let interests = await getAllInterests.load("__all__");
   return interests.find(interest => interest.id === id);
 }
