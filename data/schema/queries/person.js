@@ -26,7 +26,7 @@ export const PeopleQuery = {
   },
   resolve: (root, { interests, sort, ...args }, { loaders }) => {
     if (typeof interests == "object") {
-      args.interest_category_id = interests.category_id;
+      args.interest_category_id = interests.categoryId;
       args.interest_ids = interests.ids.join(",");
       args.interest_match = interests.match;
     }

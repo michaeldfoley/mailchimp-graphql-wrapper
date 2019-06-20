@@ -42,9 +42,9 @@ function getInterestsByCategory(category) {
   });
 }
 
-async function getInterest({ id, category_id } = {}) {
-  if (category_id && id) {
-    return getList(`interest-categories/${category_id}/interests/${id}`);
+async function getInterest({ id, categoryId } = {}) {
+  if (categoryId && id) {
+    return getList(`interest-categories/${categoryId}/interests/${id}`);
   }
   let interests = await getAllInterests.load("__all__");
   return interests.find(interest => interest.id === id);

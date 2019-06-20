@@ -2,10 +2,11 @@ import { GraphQLObjectType, GraphQLSchema } from "graphql";
 import { PersonQuery, PeopleQuery } from "./queries/person";
 import { InterestQuery } from "./queries/interest";
 import { nodeField } from "./nodes";
+import UpdatePersonMutation from "./mutations/updatePerson";
+import UnsubscribePersonMutation from "./mutations/unsubscribePerson";
 
 const Query = new GraphQLObjectType({
   name: "Query",
-  description: "The root of all... queries",
   fields: () => ({
     interest: InterestQuery,
     node: nodeField,
@@ -14,6 +15,15 @@ const Query = new GraphQLObjectType({
   })
 });
 
+const Mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: () => ({
+    updatePerson: UpdatePersonMutation,
+    unsubscribe: UnsubscribePersonMutation
+  })
+});
+
 export default new GraphQLSchema({
-  query: Query
+  query: Query,
+  mutation: Mutation
 });

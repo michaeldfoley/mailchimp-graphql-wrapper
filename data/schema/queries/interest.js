@@ -12,12 +12,12 @@ export const InterestsInputType = new GraphQLInputObjectType({
   name: "Interests",
   description: "Return records that match interest(s)",
   fields: () => ({
-    category_id: {
+    categoryId: {
       type: new GraphQLNonNull(GraphQLID),
       description: "Interest Category ID"
     },
     ids: {
-      type: new GraphQLNonNull(GraphQLList(new GraphQLNonNull(GraphQLID))),
+      type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLID))),
       description: "List of interest ids for the category"
     },
     match: {
@@ -31,7 +31,7 @@ export const InterestQuery = {
   description: "Get interest information",
   args: {
     id: { type: new GraphQLNonNull(GraphQLID) },
-    category_id: { type: GraphQLString }
+    categoryId: { type: GraphQLString }
   },
   resolve: (root, args, { loaders }) => loaders.interest.load(args)
 };
