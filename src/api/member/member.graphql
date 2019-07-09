@@ -1,0 +1,46 @@
+enum StatusType {
+  subscribed
+  unsubscribed
+  cleaned
+  pending
+  transactional
+}
+
+type Member {
+  id: ID!
+  email: String!
+  status: StatusType!
+  firstName: String
+  lastName: String
+  interests: [Interest]
+  fidn: String
+  roles: [String]
+  exclusions: [String]
+  recipientId: String
+}
+
+input InterestUpdateInput {
+  id: ID!
+  subscribed: Boolean!
+}
+
+input MemberInput {
+  id: ID
+  email: String
+}
+
+input MemberUpdateInput {
+  id: ID!
+  email: String
+  status: StatusType
+  interests: [InterestUpdateInput]
+}
+
+type Query {
+  member(input: MemberInput!): Member!
+}
+
+type Mutation {
+  updateMember(input: MemberUpdateInput!): Member!
+  unsubscribeMember(input: MemberInput!): Member!
+}

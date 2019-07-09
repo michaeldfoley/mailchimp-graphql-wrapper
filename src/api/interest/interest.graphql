@@ -1,0 +1,16 @@
+type Interest {
+  id: ID!
+  categoryId: ID!
+  name: String!
+  count: Int
+}
+
+input InterestInput {
+  id: ID!
+  categoryId: ID!
+}
+
+extend type Query {
+  interest(input: InterestInput!): Interest!
+  interests: [Interest]!
+}
