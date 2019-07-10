@@ -7,40 +7,106 @@ enum StatusType {
 }
 
 type Member {
+  """
+  The MD5 hash of the lowercase version of the list member’s email address.
+  """
   id: ID!
+  """
+  Email address for a subscriber.
+  """
   email: String!
+  """
+  Subscriber’s current status.
+  """
   status: StatusType!
+  """
+  Subscriber's first name
+  """
   firstName: String
+  """
+  Subscriber's last name
+  """
   lastName: String
+  """
+  A list of interests/groups for the subscriber
+  """
   interests: [Interest]
+  """
+  Subscriber's Fordham ID
+  """
   fidn: String
+  """
+  Subscriber's Fordham roles
+  """
   roles: [String]
+  """
+  Subscriber's exclusion codes
+  """
   exclusions: [String]
+  """
+  Subscriber's IBM Marketing Cloud/FMP Recipient ID
+  """
   recipientId: String
 }
 
 input InterestUpdateInput {
+  """
+  ID of the interest/group
+  """
   id: ID!
+  """
+  Should the subscriber be added or removed from the interest/group
+  """
   subscribed: Boolean!
 }
 
+"""
+Either ID or Email is required
+"""
 input MemberInput {
+  """
+  The MD5 hash of the lowercase version of the list member’s email address.
+  """
   id: ID
+  """
+  Email address for a subscriber.
+  """
   email: String
 }
 
 input MemberUpdateInput {
+  """
+  The MD5 hash of the lowercase version of the list member’s email address.
+  """
   id: ID!
+  """
+  The updated email address for the subscriber
+  """
   email: String
+  """
+  The updated status of subscriber
+  """
   status: StatusType
+  """
+  A list of interests/groups to add/remove
+  """
   interests: [InterestUpdateInput]
 }
 
 type Query {
+  """
+  Get a member by ID or email
+  """
   member(input: MemberInput!): Member!
 }
 
 type Mutation {
+  """
+  Update a member by ID
+  """
   updateMember(input: MemberUpdateInput!): Member!
+  """
+  Unsubscribe a member by ID or email
+  """
   unsubscribeMember(input: MemberInput!): Member!
 }

@@ -1,16 +1,43 @@
+"""
+Interest/Group information
+"""
 type Interest {
+  """
+  The id for the interest.
+  """
   id: ID!
+  """
+  The id for the interest category.
+  """
   categoryId: ID!
+  """
+  The name of the interest. This can be shown publicly on a subscription form.
+  """
   name: String!
+  """
+  The number of subscribers associated with this interest.
+  """
   count: Int
 }
 
 input InterestInput {
+  """
+  The id for the interest.
+  """
   id: ID!
+  """
+  The id for the interest category.
+  """
   categoryId: ID!
 }
 
 extend type Query {
+  """
+  Get a specific interest/group
+  """
   interest(input: InterestInput!): Interest!
+  """
+  Get a list of all interests/groups
+  """
   interests: [Interest]!
 }
