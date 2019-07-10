@@ -1,6 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { gql } from "apollo-server";
 
 const loadGQLFile = type => {
   const filePath = path.join(__dirname, "../api", type);

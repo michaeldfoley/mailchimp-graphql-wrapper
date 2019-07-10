@@ -1,5 +1,5 @@
 import keyBy from "lodash/keyBy";
-import isEmpty from "lodash/isEmpty";
+import to from "../../utils/to";
 
 async function member(
   _,
@@ -7,7 +7,7 @@ async function member(
   { dataSources: { mailchimpAPI }, helpers: { md5 } }
 ) {
   id = getId(id, email, md5);
-  const member = await mailchimpAPI.getMember(id);
+  const [err, member] = await to(mailchimpAPI.getMember(id));
   if (!member) {
     throw new Error("Member does not exist");
   }
@@ -32,19 +32,21 @@ async function updateMember(
     interest => (payload.interests[interest.id] = interest.subscribed)
   );
 
-  const member = await mailchimpAPI.patchMember(id, payload);
+  const [err, member] = await to(mailchimpAPI.patchMember(id, payload));
   return member;
 }
 
 async function unsubscribeMember(
   _,
   { input: { id, email } },
-  { dataSources: { mailchimpAPI } }
+  { dataSources: { mailchimpAPI }, helpers: { md5 } }
 ) {
   id = getId(id, email, md5);
-  const member = await mailchimpAPI.patchMember(id, {
-    status: "unsubscribed"
-  });
+  const [err, member] = await to(
+    mailchimpAPI.patchMember(id, {
+      status: "unsubscribed"
+    })
+  );
   return member;
 }
 
@@ -53,7 +55,8 @@ async function getMemberInterests(
   _,
   { dataSources: { mailchimpAPI } }
 ) {
-  let interestOptions = keyBy(await mailchimpAPI.getAllInterests(), "id");
+  const [err, allInterests] = await to(mailchimpAPI.getAllInterests());
+  const interestOptions = keyBy(allInterests, "id");
   return interests.map(key => interestOptions[key]);
 }
 
@@ -66,6 +69,9 @@ function getId(id, email, hash) {
   }
   return id;
 }
+
+// export getId function for testing
+export const ___GET_ID = getId;
 
 export default {
   Query: {

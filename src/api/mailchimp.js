@@ -1,20 +1,19 @@
 import PQueue from "p-queue";
-import dotenv from "dotenv";
 import { RESTDataSource } from "apollo-datasource-rest";
-dotenv.config();
 
-const API_KEY = process.env.API_KEY;
-const LIST_ID = process.env.LIST_ID;
 const Queue = new PQueue({ concurrency: 10 });
 
 export default class MailchimpAPI extends RESTDataSource {
-  constructor() {
+  constructor(API_KEY, LIST_ID) {
     super();
-    this.baseURL = `https://${API_KEY.split("-")[1]}.api.mailchimp.com/3.0/`;
 
     if (!/.+\-.+/.test(API_KEY)) {
       throw new Error(`missing or invalid api key: ${API_KEY}`);
     }
+
+    this.API_KEY = API_KEY;
+    this.LIST_ID = LIST_ID;
+    this.baseURL = `https://${API_KEY.split("-")[1]}.api.mailchimp.com/3.0/`;
   }
 
   async willSendRequest(request) {
@@ -24,7 +23,7 @@ export default class MailchimpAPI extends RESTDataSource {
     );
     request.headers.set(
       "Authorization",
-      `Basic ${Buffer.from("any:" + API_KEY).toString("base64")}`
+      `Basic ${Buffer.from("any:" + this.API_KEY).toString("base64")}`
     );
     if (!request.params.has("fields")) {
       request.params.set("exclude_fields", "_links");
@@ -57,6 +56,16 @@ export default class MailchimpAPI extends RESTDataSource {
     };
   }
 
+  interestReducer(interest) {
+    const { id, category_id, name, subscriber_count } = interest;
+    return {
+      id,
+      categoryId: category_id,
+      name,
+      count: subscriber_count
+    };
+  }
+
   async queuedFetch(method, path, body, init) {
     return await Queue.add(() => super[method](path, body, init));
   }
@@ -81,20 +90,21 @@ export default class MailchimpAPI extends RESTDataSource {
     return this.queuedFetch("delete", path, params, init);
   }
 
-  async getMember(id, listId = LIST_ID) {
+  async getMember(id, listId = this.LIST_ID) {
     const member = await this.get(`/lists/${listId}/members/${id}`);
     return this.memberReducer(member);
   }
 
-  async patchMember(id, body, listId = LIST_ID) {
+  async patchMember(id, body, listId = this.LIST_ID) {
     const member = await this.patch(`/lists/${listId}/members/${id}`, body);
     return this.memberReducer(member);
   }
 
-  async getInterest(id, categoryId, listId = LIST_ID) {
-    return this.get(
+  async getInterest(id, categoryId, listId = this.LIST_ID) {
+    const interest = await this.get(
       `lists/${listId}/interest-categories/${categoryId}/interests/${id}`
     );
+    return this.interestReducer(interest);
   }
 
   async getAllInterests() {
@@ -102,15 +112,13 @@ export default class MailchimpAPI extends RESTDataSource {
     const interests = await Promise.all(
       categories.map(
         async category =>
-          (await this.getInterestsByCategory(category.id, category.list_id))[
-            "interests"
-          ]
+          await this.getInterestsByCategory(category.id, category.list_id)
       )
     );
     return interests.flat();
   }
 
-  async getInterestCategories(limit = 60, listId = LIST_ID) {
+  async getInterestCategories(limit = 60, listId = this.LIST_ID) {
     return this.get(
       `lists/${listId}/interest-categories`,
       {
@@ -123,8 +131,8 @@ export default class MailchimpAPI extends RESTDataSource {
     );
   }
 
-  async getInterestsByCategory(categoryId, limit = 60, listId = LIST_ID) {
-    return this.get(
+  async getInterestsByCategory(categoryId, limit = 60, listId = this.LIST_ID) {
+    const interests = (await this.get(
       `lists/${listId}/interest-categories/${categoryId}/interests`,
       {
         fields: [
@@ -139,6 +147,7 @@ export default class MailchimpAPI extends RESTDataSource {
       {
         cacheOptions: { ttl: 3600 }
       }
-    );
+    ))["interests"];
+    return interests.map(interest => this.interestReducer(interest));
   }
 }

@@ -4,6 +4,8 @@
   "description": "A GraphQL wrapper for the Mailchimp 3.0 REST API",
   "main": "src/server.js",
   "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --collectCoverage",
     "start": "nodemon --exec babel-node src/server.js"
   },
   "author": "Michael Foley <m@michaeldfoley.com> (http://michaeldfoley.com)",
@@ -21,5 +23,17 @@
     "md5": "^2.2.1",
     "nodemon": "^1.19.1",
     "p-queue": "^6.0.2"
+  },
+  "devDependencies": {
+    "apollo-link": "^1.2.12",
+    "apollo-link-http": "^1.5.15",
+    "jest": "^24.8.0",
+    "node-fetch": "^2.6.0"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/src/__tests__/__utils.js"
+    ]
   }
 }

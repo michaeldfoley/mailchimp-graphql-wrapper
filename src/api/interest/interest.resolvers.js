@@ -16,9 +16,5 @@ export default {
   Query: {
     interest,
     interests
-  },
-  Interest: {
-    categoryId: ({ category_id }) => category_id,
-    count: ({ subscriber_count }) => subscriber_count
   }
 };
