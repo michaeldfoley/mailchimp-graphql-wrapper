@@ -1,14 +1,16 @@
+import to from "../../utils/to";
+
 async function interest(
   _,
   { input: { id, categoryId } },
   { dataSources: { mailchimpAPI } }
 ) {
-  const interest = await mailchimpAPI.getInterest(id, categoryId);
+  const [err, interest] = await to(mailchimpAPI.getInterest(id, categoryId));
   return interest;
 }
 
 async function interests(_, __, { dataSources: { mailchimpAPI } }) {
-  const interests = mailchimpAPI.getAllInterests();
+  const [err, interests] = await to(mailchimpAPI.getAllInterests());
   return interests;
 }
 

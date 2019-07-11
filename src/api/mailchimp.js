@@ -31,7 +31,10 @@ export default class MailchimpAPI extends RESTDataSource {
   }
 
   fieldToArray(field) {
-    return field.split(",").map(str => str.replace(/^\^|\^$/g, ""));
+    return field
+      .split(",")
+      .map(str => str.replace(/^\^|\^$/g, ""))
+      .filter(Boolean);
   }
 
   memberReducer(member) {
