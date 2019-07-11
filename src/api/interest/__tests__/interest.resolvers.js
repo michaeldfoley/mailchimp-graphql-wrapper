@@ -3,12 +3,12 @@ import resolvers from "../interest.resolvers";
 describe("[Query.interest]", () => {
   const mockContext = {
     dataSources: {
-      mailchimpAPI: { getInterest: jest.fn() }
+      mailchimpAPI: { getInterestById: jest.fn() }
     }
   };
   it("calls lookup from mailchimp api", async () => {
-    const { getInterest } = mockContext.dataSources.mailchimpAPI;
-    getInterest.mockReturnValueOnce({
+    const { getInterestById } = mockContext.dataSources.mailchimpAPI;
+    getInterestById.mockReturnValueOnce({
       id: "9ab9",
       name: "Interest Name",
       categoryId: "1zz2",
@@ -29,7 +29,7 @@ describe("[Query.interest]", () => {
     });
 
     // make sure the dataSources were called properly
-    expect(getInterest).toBeCalledWith("9ab9", "1zz2");
+    expect(getInterestById).toBeCalledWith("9ab9", "1zz2");
   });
 });
 

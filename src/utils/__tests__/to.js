@@ -1,6 +1,6 @@
 import to from "../to";
 
-describe("utils: to", () => {
+describe("[utils.to]", () => {
   it("returns resolved promise", async () => {
     const mockPromise = Promise.resolve({ id: "abc" });
     const [err, res] = await to(mockPromise);

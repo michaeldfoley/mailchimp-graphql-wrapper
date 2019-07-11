@@ -5,7 +5,7 @@ const mockContext = {
   dataSources: {
     mailchimpAPI: {
       getAllInterests: jest.fn(),
-      getMember: jest.fn(),
+      getMemberById: jest.fn(),
       patchMember: jest.fn()
     }
   },
@@ -40,10 +40,10 @@ describe("[Member.interests]", () => {
 });
 
 describe("[Query.member]", () => {
-  const { getMember } = mockContext.dataSources.mailchimpAPI;
+  const { getMemberById } = mockContext.dataSources.mailchimpAPI;
 
   it("converts email to id", async () => {
-    getMember.mockReturnValueOnce({
+    getMemberById.mockReturnValueOnce({
       id: "b642b4217b34b1e8d3bd915fc65c4452"
     });
 
@@ -52,11 +52,11 @@ describe("[Query.member]", () => {
       { input: { email: "test@test.com" } },
       mockContext
     );
-    expect(getMember).toBeCalledWith("b642b4217b34b1e8d3bd915fc65c4452");
+    expect(getMemberById).toBeCalledWith("b642b4217b34b1e8d3bd915fc65c4452");
   });
 
   it("calls lookup from mailchimp api", async () => {
-    getMember.mockReturnValueOnce({
+    getMemberById.mockReturnValueOnce({
       id: "b642b4217b34b1e8d3bd915fc65c4452"
     });
 

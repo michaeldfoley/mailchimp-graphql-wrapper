@@ -11,7 +11,7 @@ import MailchimpAPI from "../api/mailchimp";
  * Integration testing utils
  */
 const constructTestServer = () => {
-  const mailchimpAPI = new MailchimpAPI("ABC123", "1a23");
+  const mailchimpAPI = new MailchimpAPI("ABC123-us1", "1a23");
 
   const server = new ApolloServer({
     typeDefs: [member.typeDefs, interest.typeDefs],

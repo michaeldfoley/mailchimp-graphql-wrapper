@@ -5,7 +5,9 @@ async function interest(
   { input: { id, categoryId } },
   { dataSources: { mailchimpAPI } }
 ) {
-  const [err, interest] = await to(mailchimpAPI.getInterest(id, categoryId));
+  const [err, interest] = await to(
+    mailchimpAPI.getInterestById(id, categoryId)
+  );
   return interest;
 }
 

@@ -41,6 +41,7 @@ export default class MailchimpAPI extends RESTDataSource {
     const {
       id,
       email_address: email,
+      email_type: emailType,
       status,
       interests,
       merge_fields: { FNAME, LNAME, FIDN, ROLE, EXCLUSION, IMCID }
@@ -48,6 +49,7 @@ export default class MailchimpAPI extends RESTDataSource {
     return {
       id,
       email,
+      emailType,
       status,
       firstName: FNAME,
       lastName: LNAME,
@@ -70,7 +72,7 @@ export default class MailchimpAPI extends RESTDataSource {
   }
 
   async queuedFetch(method, path, body, init) {
-    return await Queue.add(() => super[method](path, body, init));
+    return Queue.add(() => super[method](path, body, init));
   }
 
   async get(path, params, init) {
@@ -93,25 +95,37 @@ export default class MailchimpAPI extends RESTDataSource {
     return this.queuedFetch("delete", path, params, init);
   }
 
-  async getMember(id, listId = this.LIST_ID) {
-    const member = await this.get(`/lists/${listId}/members/${id}`);
+  async getMemberById(id, listId = this.LIST_ID) {
+    const member = await this.get(`lists/${listId}/members/${id}`, {
+      fields: [
+        "id",
+        "email_address",
+        "email_type",
+        "status",
+        "merge_fields",
+        "interests"
+      ]
+    });
     return this.memberReducer(member);
   }
 
   async patchMember(id, body, listId = this.LIST_ID) {
-    const member = await this.patch(`/lists/${listId}/members/${id}`, body);
+    const member = await this.patch(`lists/${listId}/members/${id}`, body);
     return this.memberReducer(member);
   }
 
-  async getInterest(id, categoryId, listId = this.LIST_ID) {
+  async getInterestById(id, categoryId, listId = this.LIST_ID) {
     const interest = await this.get(
-      `lists/${listId}/interest-categories/${categoryId}/interests/${id}`
+      `lists/${listId}/interest-categories/${categoryId}/interests/${id}`,
+      {
+        fields: ["id", "category_id", "name", "subscriber_count"]
+      }
     );
     return this.interestReducer(interest);
   }
 
   async getAllInterests() {
-    const categories = (await this.getInterestCategories())["categories"];
+    const categories = await this.getInterestCategories();
     const interests = await Promise.all(
       categories.map(
         async category =>
@@ -122,16 +136,17 @@ export default class MailchimpAPI extends RESTDataSource {
   }
 
   async getInterestCategories(limit = 60, listId = this.LIST_ID) {
-    return this.get(
+    const categories = (await this.get(
       `lists/${listId}/interest-categories`,
       {
-        fields: ["categories.id", "categories.list_id"],
+        fields: ["categories.id"],
         count: limit
       },
       {
         cacheOptions: { ttl: 3600 }
       }
-    );
+    ))["categories"];
+    return categories;
   }
 
   async getInterestsByCategory(categoryId, limit = 60, listId = this.LIST_ID) {
@@ -141,7 +156,6 @@ export default class MailchimpAPI extends RESTDataSource {
         fields: [
           "interests.id",
           "interests.category_id",
-          "interests.list_id",
           "interests.name",
           "interests.subscriber_count"
         ],

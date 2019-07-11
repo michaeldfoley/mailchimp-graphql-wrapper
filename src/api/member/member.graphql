@@ -6,6 +6,11 @@ enum StatusType {
   transactional
 }
 
+enum EmailType {
+  html
+  text
+}
+
 type Member {
   """
   The MD5 hash of the lowercase version of the list member’s email address.
@@ -15,6 +20,10 @@ type Member {
   Email address for a subscriber.
   """
   email: String!
+  """
+  Type of email the subscriber prefers.
+  """
+  emailType: EmailType
   """
   Subscriber’s current status.
   """

@@ -7,7 +7,7 @@ async function member(
   { dataSources: { mailchimpAPI }, helpers: { md5 } }
 ) {
   id = getId(id, email, md5);
-  const [err, member] = await to(mailchimpAPI.getMember(id));
+  const [err, member] = await to(mailchimpAPI.getMemberById(id));
   if (!member) {
     throw new Error("Member does not exist");
   }
