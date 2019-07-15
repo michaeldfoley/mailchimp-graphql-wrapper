@@ -25,10 +25,6 @@ input InterestInput {
   The id for the interest.
   """
   id: ID!
-  """
-  The id for the interest category.
-  """
-  categoryId: ID!
 }
 
 extend type Query {

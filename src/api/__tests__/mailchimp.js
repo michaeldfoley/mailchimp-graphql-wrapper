@@ -1,4 +1,5 @@
 import MailchimpAPI from "../mailchimp";
+import keyBy from "lodash/keyBy";
 
 const MOCK_API_KEY = "ABC123-us1";
 const MOCK_LIST_ID = "1a23";
@@ -11,6 +12,21 @@ const mocks = {
 const ds = new MailchimpAPI(MOCK_API_KEY, MOCK_LIST_ID);
 ds.get = mocks.get;
 ds.patch = mocks.patch;
+
+function mockGetAllInterestsObject(fn = () => {}) {
+  const temp = {
+    getAllInterestsObject: ds.getAllInterestsObject
+  };
+  ds.getAllInterestsObject = jest.fn();
+  ds.getAllInterestsObject.mockReturnValueOnce(
+    keyBy([...mockInterestsByCategory1, ...mockInterestsByCategory2], "id")
+  );
+
+  fn();
+
+  // restore get interest category functions
+  ds.getAllInterestsObject = temp.getAllInterestsObject;
+}
 
 describe("[MailchimpAPI.constructor]", () => {
   it("throws error when empty or invalid api is passed", () => {
@@ -80,23 +96,28 @@ describe("[MailchimpAPI.patchMember]", () => {
 });
 
 describe("[MailchimpAPI.getInterestById]", () => {
-  it("should get an interest by id and category id", async () => {
-    mocks.get.mockReturnValueOnce(mockInterestResponse);
-
-    const res = await ds.getInterestById("fjkd453", "44rr43");
-    expect(res).toEqual(mockInterest);
-    expect(mocks.get).toBeCalledWith(
-      `lists/${MOCK_LIST_ID}/interest-categories/44rr43/interests/fjkd453`,
-      {
-        fields: ["id", "category_id", "name", "subscriber_count"]
-      }
-    );
+  it("should get an interest by id", async () => {
+    mockGetAllInterestsObject(async () => {
+      const res = await ds.getInterestById("fjkd453");
+      expect(res).toEqual(mockInterest);
+    });
   });
 });
 
 describe("[MailchimpAPI.getAllInterests]", () => {
-  it("should get a flat array of interests", async () => {
-    // temporarily mock get interest category functions
+  it("should return an array of interests", async () => {
+    mockGetAllInterestsObject(async () => {
+      const res = await ds.getAllInterests();
+      expect(res).toEqual([
+        ...mockInterestsByCategory1,
+        ...mockInterestsByCategory2
+      ]);
+    });
+  });
+});
+
+describe("[MailchimpAPI.getAllInterestsObject]", () => {
+  it("should return an object of interests keyed by id", async () => {
     const temp = {
       getInterestCategories: ds.getInterestCategories,
       getInterestsByCategory: ds.getInterestsByCategory
@@ -111,11 +132,10 @@ describe("[MailchimpAPI.getAllInterests]", () => {
       .mockReturnValueOnce(mockInterestsByCategory1)
       .mockReturnValueOnce(mockInterestsByCategory2);
 
-    const res = await ds.getAllInterests();
-    expect(res).toEqual([
-      ...mockInterestsByCategory1,
-      ...mockInterestsByCategory2
-    ]);
+    const res = await ds.getAllInterestsObject();
+    expect(res).toEqual(
+      keyBy([...mockInterestsByCategory1, ...mockInterestsByCategory2], "id")
+    );
 
     // restore get interest category functions
     ds.getInterestCategories = temp.getInterestCategories;

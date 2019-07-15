@@ -18,7 +18,7 @@ describe("[Query.interest]", () => {
     // check the resolver response
     const res = await resolvers.Query.interest(
       null,
-      { input: { id: "9ab9", categoryId: "1zz2" } },
+      { input: { id: "9ab9" } },
       mockContext
     );
     expect(res).toEqual({
@@ -29,7 +29,7 @@ describe("[Query.interest]", () => {
     });
 
     // make sure the dataSources were called properly
-    expect(getInterestById).toBeCalledWith("9ab9", "1zz2");
+    expect(getInterestById).toBeCalledWith("9ab9");
   });
 });
 

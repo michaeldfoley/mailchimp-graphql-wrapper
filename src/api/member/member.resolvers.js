@@ -1,4 +1,3 @@
-import keyBy from "lodash/keyBy";
 import to from "../../utils/to";
 
 async function member(
@@ -55,9 +54,7 @@ async function getMemberInterests(
   _,
   { dataSources: { mailchimpAPI } }
 ) {
-  const [err, allInterests] = await to(mailchimpAPI.getAllInterests());
-  const interestOptions = keyBy(allInterests, "id");
-  return interests.map(key => interestOptions[key]);
+  return interests.map(id => mailchimpAPI.getInterestById(id));
 }
 
 function getId(id, email, hash) {

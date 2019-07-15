@@ -1,4 +1,5 @@
 import PQueue from "p-queue";
+import keyBy from "lodash/keyBy";
 import { RESTDataSource } from "apollo-datasource-rest";
 
 const Queue = new PQueue({ concurrency: 10 });
@@ -114,25 +115,27 @@ export default class MailchimpAPI extends RESTDataSource {
     return this.memberReducer(member);
   }
 
-  async getInterestById(id, categoryId, listId = this.LIST_ID) {
-    const interest = await this.get(
-      `lists/${listId}/interest-categories/${categoryId}/interests/${id}`,
-      {
-        fields: ["id", "category_id", "name", "subscriber_count"]
-      }
-    );
-    return this.interestReducer(interest);
+  async getInterestById(id, listId = this.LIST_ID) {
+    const allInterests = await this.getAllInterestsObject(listId);
+    return allInterests[id];
   }
 
-  async getAllInterests() {
-    const categories = await this.getInterestCategories();
-    const interests = await Promise.all(
-      categories.map(
-        async category =>
-          await this.getInterestsByCategory(category.id, category.list_id)
-      )
-    );
-    return interests.flat();
+  async getAllInterests(listId = this.LIST_ID) {
+    return Object.values(await this.getAllInterestsObject(listId));
+  }
+
+  async getAllInterestsObject(listId = this.LIST_ID) {
+    if (!this.allInterests) {
+      const categories = await this.getInterestCategories(60, listId);
+      const interests = await Promise.all(
+        categories.map(
+          async category =>
+            await this.getInterestsByCategory(category.id, 60, category.list_id)
+        )
+      );
+      this.allInterests = keyBy(interests.flat(), "id");
+    }
+    return this.allInterests;
   }
 
   async getInterestCategories(limit = 60, listId = this.LIST_ID) {

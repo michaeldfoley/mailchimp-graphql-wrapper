@@ -4,7 +4,7 @@ import md5 from "md5";
 const mockContext = {
   dataSources: {
     mailchimpAPI: {
-      getAllInterests: jest.fn(),
+      getInterestById: jest.fn(),
       getMemberById: jest.fn(),
       patchMember: jest.fn()
     }
@@ -16,24 +16,26 @@ const mockContext = {
 
 describe("[Member.interests]", () => {
   it("looks up interests from mailchimp api", async () => {
-    const { getAllInterests } = mockContext.dataSources.mailchimpAPI;
-    getAllInterests.mockReturnValueOnce([
-      {
+    const { getInterestById } = mockContext.dataSources.mailchimpAPI;
+    getInterestById
+      .mockReturnValueOnce({
         id: "9ab9"
-      },
-      {
+      })
+      .mockReturnValueOnce({
         id: "c8shd"
-      }
-    ]);
+      });
 
     const res = await resolvers.Member.interests(
-      { interests: ["9ab9"] },
+      { interests: ["9ab9", "c8shd"] },
       null,
       mockContext
     );
     expect(res).toEqual([
       {
         id: "9ab9"
+      },
+      {
+        id: "c8shd"
       }
     ]);
   });
