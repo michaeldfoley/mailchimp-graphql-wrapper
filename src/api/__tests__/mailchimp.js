@@ -13,19 +13,21 @@ const ds = new MailchimpAPI(MOCK_API_KEY, MOCK_LIST_ID);
 ds.get = mocks.get;
 ds.patch = mocks.patch;
 
-function mockGetAllInterestsObject(fn = () => {}) {
-  const temp = {
-    getAllInterestsObject: ds.getAllInterestsObject
-  };
-  ds.getAllInterestsObject = jest.fn();
-  ds.getAllInterestsObject.mockReturnValueOnce(
-    keyBy([...mockInterestsByCategory1, ...mockInterestsByCategory2], "id")
-  );
+async function tempMockFunction(mockFunctions = [], fn = () => {}) {
+  if (typeof mockFunctions == "string") mockFunctions = [mockFunctions];
+  const temp = {};
 
-  fn();
+  mockFunctions.forEach(mock => {
+    temp[mock] = ds[mock];
+    ds[mock] = jest.fn();
+  });
 
-  // restore get interest category functions
-  ds.getAllInterestsObject = temp.getAllInterestsObject;
+  await fn();
+
+  // restore temporarily mocked function
+  mockFunctions.forEach(mock => {
+    ds[mock] = temp[mock];
+  });
 }
 
 describe("[MailchimpAPI.constructor]", () => {
@@ -81,7 +83,7 @@ describe("[MailchimpAPI.patchMember]", () => {
     mocks.patch.mockReturnValueOnce(mockMemberResponse);
 
     const res = await ds.patchMember("b642b4217b34b1e8d3bd915fc65c4452", {
-      email_address: "test2@test.com",
+      email: "test2@test.com",
       status: "unsubscribed"
     });
     expect(res).toEqual(mockMember);
@@ -93,11 +95,43 @@ describe("[MailchimpAPI.patchMember]", () => {
       }
     );
   });
+  it("should format interests properly", async () => {
+    mocks.patch.mockReturnValueOnce(mockMemberResponse);
+    await ds.patchMember("b642b4217b34b1e8d3bd915fc65c4452", {
+      interests: [
+        { id: "abcd", subscribed: true },
+        { id: "12bd", subscribed: false }
+      ]
+    });
+    expect(mocks.patch).toBeCalledWith(
+      `lists/${MOCK_LIST_ID}/members/b642b4217b34b1e8d3bd915fc65c4452`,
+      {
+        interests: {
+          abcd: true,
+          "12bd": false
+        }
+      }
+    );
+  });
+});
+
+describe("[MailchimpAPI.unsubscribeMember]", () => {
+  it("should call patchMember to set status to unsubscribed", async () => {
+    mocks.patch.mockReturnValueOnce(mockMemberResponse);
+    await ds.unsubscribeMember("b642b4217b34b1e8d3bd915fc65c4452");
+    expect(mocks.patch).toBeCalledWith(
+      `lists/${MOCK_LIST_ID}/members/b642b4217b34b1e8d3bd915fc65c4452`,
+      { status: "unsubscribed" }
+    );
+  });
 });
 
 describe("[MailchimpAPI.getInterestById]", () => {
   it("should get an interest by id", async () => {
-    mockGetAllInterestsObject(async () => {
+    tempMockFunction("getAllInterestsObject", async () => {
+      ds.getAllInterestsObject.mockReturnValueOnce(
+        keyBy([...mockInterestsByCategory1, ...mockInterestsByCategory2], "id")
+      );
       const res = await ds.getInterestById("fjkd453");
       expect(res).toEqual(mockInterest);
     });
@@ -106,7 +140,10 @@ describe("[MailchimpAPI.getInterestById]", () => {
 
 describe("[MailchimpAPI.getAllInterests]", () => {
   it("should return an array of interests", async () => {
-    mockGetAllInterestsObject(async () => {
+    tempMockFunction("getAllInterestsObject", async () => {
+      ds.getAllInterestsObject.mockReturnValueOnce(
+        keyBy([...mockInterestsByCategory1, ...mockInterestsByCategory2], "id")
+      );
       const res = await ds.getAllInterests();
       expect(res).toEqual([
         ...mockInterestsByCategory1,
@@ -118,28 +155,33 @@ describe("[MailchimpAPI.getAllInterests]", () => {
 
 describe("[MailchimpAPI.getAllInterestsObject]", () => {
   it("should return an object of interests keyed by id", async () => {
-    const temp = {
-      getInterestCategories: ds.getInterestCategories,
-      getInterestsByCategory: ds.getInterestsByCategory
-    };
-    ds.getInterestCategories = jest.fn();
-    ds.getInterestsByCategory = jest.fn();
+    tempMockFunction(
+      ["getInterestCategories", "getInterestsByCategory"],
+      async () => {
+        ds.getInterestCategories.mockReturnValueOnce(
+          mockInterestCategoriesResponse["categories"]
+        );
+        ds.getInterestsByCategory
+          .mockReturnValueOnce(mockInterestsByCategory1)
+          .mockReturnValueOnce(mockInterestsByCategory2);
 
-    ds.getInterestCategories.mockReturnValueOnce(
-      mockInterestCategoriesResponse["categories"]
+        const res = await ds.getAllInterestsObject();
+        expect(res).toEqual(
+          keyBy(
+            [...mockInterestsByCategory1, ...mockInterestsByCategory2],
+            "id"
+          )
+        );
+      }
     );
-    ds.getInterestsByCategory
-      .mockReturnValueOnce(mockInterestsByCategory1)
-      .mockReturnValueOnce(mockInterestsByCategory2);
+  });
 
-    const res = await ds.getAllInterestsObject();
-    expect(res).toEqual(
-      keyBy([...mockInterestsByCategory1, ...mockInterestsByCategory2], "id")
-    );
-
-    // restore get interest category functions
-    ds.getInterestCategories = temp.getInterestCategories;
-    ds.getInterestsByCategory = temp.getInterestsByCategory;
+  it("should return cached interests if they exist", async () => {
+    const tempInterests = ds.allInterests;
+    ds.allInterests = mockInterestsByCategory1;
+    const res = await ds.getAllInterests();
+    expect(res).toEqual(mockInterestsByCategory1);
+    ds.allInterests = tempInterests;
   });
 });
 

@@ -111,8 +111,24 @@ export default class MailchimpAPI extends RESTDataSource {
   }
 
   async patchMember(id, body, listId = this.LIST_ID) {
-    const member = await this.patch(`lists/${listId}/members/${id}`, body);
+    const { email, interests, ...payload } = body;
+
+    if (email) {
+      payload.email_address = email;
+    }
+    if (interests) {
+      payload.interests = {};
+      interests.forEach(
+        interest => (payload.interests[interest.id] = interest.subscribed)
+      );
+    }
+
+    const member = await this.patch(`lists/${listId}/members/${id}`, payload);
     return this.memberReducer(member);
+  }
+
+  async unsubscribeMember(id, listId = this.LIST_ID) {
+    return await this.patchMember(id, { status: "unsubscribed" }, listId);
   }
 
   async getInterestById(id, listId = this.LIST_ID) {
@@ -128,10 +144,13 @@ export default class MailchimpAPI extends RESTDataSource {
     if (!this.allInterests) {
       const categories = await this.getInterestCategories(60, listId);
       const interests = await Promise.all(
-        categories.map(
-          async category =>
-            await this.getInterestsByCategory(category.id, 60, category.list_id)
-        )
+        categories.map(async category => {
+          return await this.getInterestsByCategory(
+            category.id,
+            60,
+            category.list_id
+          );
+        })
       );
       this.allInterests = keyBy(interests.flat(), "id");
     }

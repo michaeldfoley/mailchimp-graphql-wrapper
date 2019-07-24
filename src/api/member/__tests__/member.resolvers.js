@@ -6,7 +6,8 @@ const mockContext = {
     mailchimpAPI: {
       getInterestById: jest.fn(),
       getMemberById: jest.fn(),
-      patchMember: jest.fn()
+      patchMember: jest.fn(),
+      unsubscribeMember: jest.fn()
     }
   },
   helpers: {
@@ -114,15 +115,12 @@ describe("[Mutation.updateMember]", () => {
       },
       mockContext
     );
-    expect(res).toEqual({
-      id: "f2c97b1f2d2898cd2d6466ce95d4ba33",
-      email: "test2@test.com",
-      interests: ["9ab9"],
-      status: "unsubscribed"
-    });
     expect(patchMember).toBeCalledWith("b642b4217b34b1e8d3bd915fc65c4452", {
-      email_address: "test2@test.com",
-      interests: { "9ab9": true, abcd: false },
+      email: "test2@test.com",
+      interests: [
+        { id: "9ab9", subscribed: true },
+        { id: "abcd", subscribed: false }
+      ],
       status: "unsubscribed"
     });
   });
@@ -151,17 +149,20 @@ describe("[Mutation.updateMember]", () => {
     );
 
     expect(patchMember).toBeCalledWith("b642b4217b34b1e8d3bd915fc65c4452", {
-      interests: { "9ab9": true, abcd: false },
+      interests: [
+        { id: "9ab9", subscribed: true },
+        { id: "abcd", subscribed: false }
+      ],
       status: "subscribed"
     });
   });
 });
 
 describe("[Mutation.unsubscribeMember]", () => {
-  const { patchMember } = mockContext.dataSources.mailchimpAPI;
+  const { unsubscribeMember } = mockContext.dataSources.mailchimpAPI;
 
   it("converts email to id", async () => {
-    patchMember.mockReturnValueOnce({
+    unsubscribeMember.mockReturnValueOnce({
       id: "b642b4217b34b1e8d3bd915fc65c4452",
       status: "unsubscribed"
     });
@@ -171,25 +172,8 @@ describe("[Mutation.unsubscribeMember]", () => {
       { input: { email: "test@test.com" } },
       mockContext
     );
-    expect(patchMember).toBeCalledWith("b642b4217b34b1e8d3bd915fc65c4452", {
-      status: "unsubscribed"
-    });
-  });
-
-  it("returns an unsubscribed member", async () => {
-    patchMember.mockReturnValueOnce({
-      id: "b642b4217b34b1e8d3bd915fc65c4452",
-      status: "unsubscribed"
-    });
-
-    const res = await resolvers.Mutation.unsubscribeMember(
-      null,
-      { input: { id: "b642b4217b34b1e8d3bd915fc65c4452" } },
-      mockContext
+    expect(unsubscribeMember).toBeCalledWith(
+      "b642b4217b34b1e8d3bd915fc65c4452"
     );
-    expect(res).toEqual({
-      id: "b642b4217b34b1e8d3bd915fc65c4452",
-      status: "unsubscribed"
-    });
   });
 });

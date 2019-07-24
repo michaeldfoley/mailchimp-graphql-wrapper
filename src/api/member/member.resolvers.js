@@ -15,23 +15,10 @@ async function member(
 
 async function updateMember(
   _,
-  { input: { id, email, status, interests } },
+  { input: { id, ...input } },
   { dataSources: { mailchimpAPI } }
 ) {
-  const payload = {
-    status,
-    interests: {}
-  };
-
-  if (email) {
-    payload.email_address = email;
-  }
-
-  interests.forEach(
-    interest => (payload.interests[interest.id] = interest.subscribed)
-  );
-
-  const [err, member] = await to(mailchimpAPI.patchMember(id, payload));
+  const [err, member] = await to(mailchimpAPI.patchMember(id, input));
   return member;
 }
 
@@ -41,11 +28,7 @@ async function unsubscribeMember(
   { dataSources: { mailchimpAPI }, helpers: { md5 } }
 ) {
   id = getId(id, email, md5);
-  const [err, member] = await to(
-    mailchimpAPI.patchMember(id, {
-      status: "unsubscribed"
-    })
-  );
+  const [err, member] = await to(mailchimpAPI.unsubscribeMember(id));
   return member;
 }
 
