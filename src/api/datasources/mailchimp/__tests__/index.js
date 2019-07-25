@@ -1,4 +1,4 @@
-import MailchimpAPI from "../mailchimp";
+import MailchimpAPI from "..";
 import keyBy from "lodash/keyBy";
 
 const MOCK_API_KEY = "ABC123-us1";
@@ -34,25 +34,6 @@ describe("[MailchimpAPI.constructor]", () => {
   it("throws error when empty or invalid api is passed", () => {
     expect(() => new MailchimpAPI("ABC")).toThrow(Error);
     expect(() => new MailchimpAPI()).toThrow(Error);
-  });
-});
-
-describe("[MailchimpAPI.fieldToArray]", () => {
-  it("transforms field to array", () => {
-    expect(ds.fieldToArray("^a^,^b^,^c^")).toEqual(["a", "b", "c"]);
-    expect(ds.fieldToArray("^^")).toEqual([]);
-  });
-});
-
-describe("[MailchimpAPI.memberReducer]", () => {
-  it("transforms member", () => {
-    expect(ds.memberReducer(mockMemberResponse)).toEqual(mockMember);
-  });
-});
-
-describe("[MailchimpAPI.interestReducer]", () => {
-  it("transforms interest", () => {
-    expect(ds.interestReducer(mockInterestResponse)).toEqual(mockInterest);
   });
 });
 
@@ -325,12 +306,6 @@ const mockInterestsByCategory2 = [
 ];
 
 // Raw response from API
-const mockInterestResponse = {
-  category_id: "44rr43",
-  id: "fjkd453",
-  name: "Test Category",
-  subscriber_count: "10"
-};
 
 const mockInterestCategoriesResponse = {
   categories: [{ id: "44rr43" }, { id: "dsjka5" }]

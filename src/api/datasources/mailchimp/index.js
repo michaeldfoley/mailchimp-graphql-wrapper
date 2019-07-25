@@ -1,6 +1,8 @@
 import PQueue from "p-queue";
 import keyBy from "lodash/keyBy";
 import { RESTDataSource } from "apollo-datasource-rest";
+import memberReducer from "./mailchimp.member.reducer";
+import interestReducer from "./mailchimp.interest.reducer";
 
 const Queue = new PQueue({ concurrency: 10 });
 
@@ -29,47 +31,6 @@ export default class MailchimpAPI extends RESTDataSource {
     if (!request.params.has("fields")) {
       request.params.set("exclude_fields", "_links");
     }
-  }
-
-  fieldToArray(field) {
-    return field
-      .split(",")
-      .map(str => str.replace(/^\^|\^$/g, ""))
-      .filter(Boolean);
-  }
-
-  memberReducer(member) {
-    const {
-      id,
-      email_address: email,
-      email_type: emailType,
-      status,
-      interests,
-      merge_fields: { FNAME, LNAME, FIDN, ROLE, EXCLUSION, IMCID }
-    } = member;
-    return {
-      id,
-      email,
-      emailType,
-      status,
-      firstName: FNAME,
-      lastName: LNAME,
-      fidn: FIDN,
-      roles: this.fieldToArray(ROLE),
-      interests: Object.keys(interests).filter(key => interests[key]),
-      exclusions: this.fieldToArray(EXCLUSION),
-      recipientId: IMCID
-    };
-  }
-
-  interestReducer(interest) {
-    const { id, category_id, name, subscriber_count } = interest;
-    return {
-      id,
-      categoryId: category_id,
-      name,
-      count: subscriber_count
-    };
   }
 
   async queuedFetch(method, path, body, init) {
@@ -107,7 +68,7 @@ export default class MailchimpAPI extends RESTDataSource {
         "interests"
       ]
     });
-    return this.memberReducer(member);
+    return memberReducer(member);
   }
 
   async patchMember(id, body, listId = this.LIST_ID) {
@@ -124,7 +85,7 @@ export default class MailchimpAPI extends RESTDataSource {
     }
 
     const member = await this.patch(`lists/${listId}/members/${id}`, payload);
-    return this.memberReducer(member);
+    return memberReducer(member);
   }
 
   async unsubscribeMember(id, listId = this.LIST_ID) {
@@ -187,6 +148,6 @@ export default class MailchimpAPI extends RESTDataSource {
         cacheOptions: { ttl: 3600 }
       }
     ))["interests"];
-    return interests.map(interest => this.interestReducer(interest));
+    return interests.map(interest => interestReducer(interest));
   }
 }

@@ -1,15 +1,7 @@
+import md5 from "md5";
 import member from "./member";
 import interest from "./interest";
-import MailchimpAPI from "./mailchimp";
-import md5 from "md5";
-import dotenv from "dotenv";
-dotenv.config();
-
-const { API_KEY, LIST_ID } = process.env;
-
-const dataSources = () => ({
-  mailchimpAPI: new MailchimpAPI(API_KEY, LIST_ID)
-});
+import dataSources from "./datasources";
 
 export default {
   typeDefs: [member.typeDefs, interest.typeDefs],
