@@ -19,7 +19,7 @@
     "apollo-server": "^2.6.8",
     "dotenv": "^8.0.0",
     "graphql": "^14.4.2",
-    "lodash": "^4.17.14",
+    "lodash": "^4.17.21",
     "md5": "^2.2.1",
     "nodemon": "^1.19.1",
     "p-queue": "^6.0.2"
